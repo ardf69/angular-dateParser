@@ -20,6 +20,15 @@ angular.module('dateParser')
                     ngModel.$render();
                 });
 
+                scope.$watch(function() {
+                    return $locale.id;
+                },
+                function(newValue, oldValue, scope) {
+                    if (angular.isDefined(dateFormat)) {
+                     ngModel.$render();
+                    }
+                });
+
                 ngModel.$parsers.unshift(function(viewValue) {
                     var date = $dateParser(viewValue, dateFormat);
 
