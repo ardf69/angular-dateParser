@@ -1,7 +1,7 @@
 /*!
  * angular-dateParser 1.0.13
  * https://github.com/dnasir/angular-dateParser
- * Copyright 2014, Dzulqarnain Nasir
+ * Copyright 2016, Dzulqarnain Nasir
  * Licensed under: MIT (http://www.opensource.org/licenses/MIT)
  */
 
@@ -26,10 +26,21 @@
         };
     } ]).factory("$dateParser", [ "$locale", "dateParserHelpers", function($locale, dateParserHelpers) {
         "use strict";
-        var datetimeFormats = $locale.DATETIME_FORMATS;
-        var monthNames = datetimeFormats.MONTH.concat(datetimeFormats.SHORTMONTH);
-        var dayNames = datetimeFormats.DAY.concat(datetimeFormats.SHORTDAY);
+        var localeId;
+        var datetimeFormats;
+        var monthNames;
+        var dayNames;
+        function init() {
+            localeId = $locale.id;
+            datetimeFormats = $locale.DATETIME_FORMATS;
+            monthNames = datetimeFormats.MONTH.concat(datetimeFormats.SHORTMONTH);
+            dayNames = datetimeFormats.DAY.concat(datetimeFormats.SHORTDAY);
+        }
+        init();
         return function(val, format) {
+            if ($locale.id !== localeId) {
+                init();
+            }
             if (angular.isDate(val)) {
                 return val;
             }
@@ -240,6 +251,13 @@
                 attrs.$observe("dateParser", function(value) {
                     dateFormat = value;
                     ngModel.$render();
+                });
+                scope.$watch(function() {
+                    return $locale.id;
+                }, function(newValue, oldValue, scope) {
+                    if (angular.isDefined(dateFormat)) {
+                        ngModel.$render();
+                    }
                 });
                 ngModel.$parsers.unshift(function(viewValue) {
                     var date = $dateParser(viewValue, dateFormat);
